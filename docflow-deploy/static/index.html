@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow Pro — Conversor PDF a Word</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12110f;--paper:#f5f2eb;--cream:#eae6db;--border:#cdc8b8;
+  --red:#c13a18;--red2:#a82f12;--blue:#1a5bc8;--green:#257040;
+  --muted:#7b7668;--card:#ffffff;
+  --sh:0 2px 24px rgba(18,17,15,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.55}
+
+/* ══ HEADER ══ */
+header{
+  background:var(--ink);color:var(--paper);
+  height:58px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;border-bottom:3px solid var(--red);
+  position:sticky;top:0;z-index:100;
+}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.4px;display:flex;align-items:center;gap:8px}
+.logo-dot{color:var(--red)}
+.logo-tag{font-size:10px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;
+  background:rgba(255,255,255,.1);padding:3px 9px;border-radius:4px;color:rgba(255,255,255,.65)}
+
+/* ══ HERO ══ */
+.hero{text-align:center;padding:52px 20px 40px;max-width:660px;margin:0 auto}
+.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(30px,5vw,50px);
+  line-height:1.08;margin-bottom:14px;color:var(--ink)}
+.hero h1 mark{background:none;color:var(--red);font-style:normal}
+.hero p{color:var(--muted);font-size:15.5px;max-width:480px;margin:0 auto 22px;line-height:1.65}
+.badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.badge{background:var(--cream);border:1.5px solid var(--border);border-radius:100px;
+  padding:5px 14px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:5px}
+
+/* ══ MAIN LAYOUT ══ */
+.wrap{max-width:900px;margin:0 auto;padding:0 20px 80px}
+
+/* ══ STEPPER ══ */
+.stepper{display:flex;align-items:center;justify-content:center;gap:0;margin:32px 0 36px}
+.st{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted);transition:color .3s}
+.st.active{color:var(--ink)}.st.done{color:var(--green)}
+.snum{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:11px;flex-shrink:0;transition:all .3s}
+.st.active .snum{background:var(--ink);color:#fff;border-color:var(--ink)}
+.st.done .snum{background:var(--green);color:#fff;border-color:var(--green)}
+.sline{width:44px;height:2px;background:var(--border);flex-shrink:0;transition:background .3s}
+.st.done+.sline{background:var(--green)}
+@media(max-width:500px){.st span{display:none}.sline{width:20px}}
+
+/* ══ CARD ══ */
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:24px}
+.card-head{background:var(--cream);border-bottom:1.5px solid var(--border);
+  padding:16px 26px;display:flex;align-items:center;gap:12px}
+.card-ico{width:36px;height:36px;background:var(--ink);color:#fff;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15.5px}
+.card-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.card-body{padding:26px}
+.card-head-right{margin-left:auto;display:flex;gap:8px}
+
+/* ══ DROPZONE ══ */
+.drop{border:2.5px dashed var(--border);border-radius:14px;padding:44px 20px;
+  text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);position:relative}
+.drop:hover,.drop.over{border-color:var(--red);background:#fdf3f0}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-ico{font-size:46px;display:block;margin-bottom:14px}
+.drop-title{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:6px}
+.drop-sub{color:var(--muted);font-size:13px}
+.drop-sub b{color:var(--red)}
+
+/* file pill */
+.file-pill{display:flex;align-items:center;gap:12px;margin-top:16px;
+  background:var(--cream);border:1.5px solid var(--border);border-radius:10px;padding:12px 16px}
+.fp-name{font-weight:600;font-size:13.5px;word-break:break-all;flex:1}
+.fp-size{font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+/* ══ FIELDS ══ */
+.field-row{display:flex;gap:10px;margin-top:16px;align-items:flex-end;flex-wrap:wrap}
+.fg{flex:1;min-width:180px}
+.fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.1px;color:var(--muted);margin-bottom:5px}
+.fg input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-family:'DM Sans',sans-serif;font-size:14px;background:var(--cream);color:var(--ink);transition:border-color .2s}
+.fg input:focus{outline:none;border-color:var(--blue)}
+
+/* ══ BUTTONS ══ */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:9px;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:13.5px;
+  cursor:pointer;border:2px solid transparent;transition:all .18s;white-space:nowrap;text-decoration:none}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red2)}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#154fa8}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#1c5531}
+.btn-dark{background:var(--ink);color:var(--paper)}.btn-dark:hover{background:#2c2b28}
+.btn-out{background:transparent;color:var(--ink);border-color:var(--border)}.btn-out:hover{border-color:var(--ink);background:var(--cream)}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.btn-lg{padding:14px 28px;font-size:15px;border-radius:10px}
+
+/* ══ PROGRESS ══ */
+.prog-wrap{margin-top:20px}
+.prog-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+.prog-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--red),#e05030);border-radius:4px;transition:width .6s ease;width:0%}
+
+/* status */
+.status{display:flex;align-items:center;gap:12px;background:var(--cream);
+  border:1.5px solid var(--border);border-radius:11px;padding:14px 18px;margin-top:16px}
+.st-ico{font-size:22px;flex-shrink:0}
+.st-text strong{display:block;font-size:13.5px;font-weight:600;margin-bottom:2px}
+.st-text span{font-size:12px;color:var(--muted)}
+
+/* result */
+.result{background:linear-gradient(135deg,#eef8f2,#e2f2ea);border:1.5px solid #a3d4b4;
+  border-radius:12px;padding:20px 22px;margin-top:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.result-ico{font-size:38px}
+.result-info{flex:1;min-width:180px}
+.result-info strong{display:block;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px}
+.result-info small{font-size:12.5px;color:#2f6b47}
+.result-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ══ EDITOR TOOLBAR ══ */
+.toolbar{display:flex;gap:3px;padding:10px 14px;background:var(--cream);
+  border-bottom:1.5px solid var(--border);flex-wrap:wrap;align-items:center}
+.tsep{width:1px;height:22px;background:var(--border);margin:0 4px;flex-shrink:0}
+.tb{padding:4px 9px;border:1.5px solid transparent;border-radius:6px;
+  cursor:pointer;font-size:12.5px;font-weight:600;background:transparent;
+  color:var(--ink);transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.tb:hover{background:var(--border)}.tb.on{background:var(--ink);color:#fff}
+.fsize{padding:3px 7px;border:1.5px solid var(--border);border-radius:6px;
+  font-size:12px;background:var(--card);cursor:pointer;font-family:'DM Sans',sans-serif}
+.cpick{width:26px;height:26px;border:1.5px solid var(--border);border-radius:5px;cursor:pointer;padding:2px}
+
+/* ══ EDITOR AREA ══ */
+.editor{min-height:500px;max-height:640px;padding:30px 40px;outline:none;
+  font-size:13.5px;line-height:1.72;color:var(--ink);background:#fff;overflow-y:auto}
+.editor:focus{outline:none}
+.editor img{max-width:100%;height:auto;cursor:pointer}
+.editor table{border-collapse:collapse;width:100%;margin:12px 0}
+.editor td,.editor th{border:1px solid var(--border);padding:7px 11px}
+.editor th{background:var(--cream);font-weight:600}
+.editor h1,.editor h2,.editor h3{font-family:'Syne',sans-serif;font-weight:700;margin:16px 0 8px}
+.editor p{margin-bottom:9px}
+@media(max-width:600px){.editor{padding:16px;min-height:360px}}
+
+/* ══ ACTIONS ══ */
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;padding-top:18px;
+  border-top:1.5px solid var(--border);align-items:center}
+
+/* ══ INFO BOX ══ */
+.infobox{background:#fffbea;border:1.5px solid #e8c93a;border-radius:10px;
+  padding:12px 16px;font-size:12.5px;color:#6a5c10;margin-top:14px;display:flex;gap:9px;align-items:flex-start}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:26px;right:26px;background:var(--ink);color:var(--paper);
+  padding:12px 20px;border-radius:10px;font-size:13.5px;font-weight:500;
+  box-shadow:0 8px 32px rgba(0,0,0,.22);z-index:9999;
+  transform:translateY(64px);opacity:0;transition:all .28s;
+  max-width:320px;display:flex;align-items:center;gap:9px}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.ok{border-left:4px solid var(--green)}
+#toast.err{border-left:4px solid var(--red)}
+
+/* ══ SPINNER ══ */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;
+  border-radius:50%;animation:spin .75s linear infinite;display:inline-block;flex-shrink:0}
+
+/* ══ HIDDEN ══ */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Doc<span class="logo-dot">Flow</span> <span class="logo-tag">Pro</span></div>
+  <span class="logo-tag">PDF → Word con Layout</span>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Convierte PDF a Word<br><mark>sin perder el diseño</mark></h1>
+  <p>Logos, tablas, sellos, columnas — todo se preserva exactamente como en el PDF original. Con o sin contraseña.</p>
+  <div class="badges">
+    <span class="badge">🔐 PDF con contraseña</span>
+    <span class="badge">🔒 PDF solo lectura</span>
+    <span class="badge">📐 Diseño preservado</span>
+    <span class="badge">🖼️ Imágenes incluidas</span>
+    <span class="badge">📝 Exporta Word y PDF</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- STEPPER -->
+  <div class="stepper">
+    <div class="st active" id="s1"><div class="snum">1</div><span>Cargar PDF</span></div>
+    <div class="sline" id="sl1"></div>
+    <div class="st" id="s2"><div class="snum">2</div><span>Convertir</span></div>
+    <div class="sline" id="sl2"></div>
+    <div class="st" id="s3"><div class="snum">3</div><span>Descargar</span></div>
+    <div class="sline" id="sl3"></div>
+    <div class="st" id="s4"><div class="snum">4</div><span>Editar / Exportar</span></div>
+  </div>
+
+  <!-- PANEL 1: UPLOAD -->
+  <div id="panelUpload">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-ico">📂</div>
+        <div>
+          <div class="card-title">Cargar documento PDF</div>
+          <div class="card-sub">El diseño se preserva — tablas, imágenes, logos, columnas</div>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <!-- Dropzone -->
+        <div class="drop" id="dropzone">
+          <input type="file" id="fileIn" accept=".pdf">
+          <span class="drop-ico">📄</span>
+          <div class="drop-title">Arrastra tu PDF aquí</div>
+          <div class="drop-sub">o haz clic para seleccionar &nbsp;·&nbsp; <b>Solo archivos PDF</b> &nbsp;·&nbsp; Máx. 50 MB</div>
+        </div>
+
+        <!-- File info pill -->
+        <div id="filePill" class="file-pill hidden">
+          <span style="font-size:22px">📄</span>
+          <span class="fp-name" id="fpName">—</span>
+          <span class="fp-size" id="fpSize">—</span>
+          <button class="btn btn-out" style="padding:5px 10px;font-size:12px" onclick="clearFile()">✕</button>
+        </div>
+
+        <!-- Password field -->
+        <div class="field-row">
+          <div class="fg">
+            <label>Contraseña del PDF (si aplica)</label>
+            <input type="password" id="pdfPass" placeholder="Solo si el PDF está protegido con contraseña">
+          </div>
+          <button class="btn btn-red btn-lg" id="btnConvert" disabled>
+            ⚡ Convertir a Word
+          </button>
+        </div>
+
+        <div class="infobox">
+          💡 <span>Si el PDF tiene restricciones de edición sin contraseña, el sistema las remueve automáticamente. Para PDFs con contraseña desconocida, intenta dejarla en blanco.</span>
+        </div>
+
+        <!-- Progress -->
+        <div id="progWrap" class="prog-wrap hidden">
+          <div class="prog-labels">
+            <span id="progStep">Procesando...</span>
+            <span id="progPct">0%</span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+        </div>
+
+        <!-- Status -->
+        <div id="statusBox" class="status hidden">
+          <span class="st-ico" id="stIco">⏳</span>
+          <div class="st-text">
+            <strong id="stTitle">Procesando</strong>
+            <span id="stSub">Por favor espera...</span>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div id="resultBox" class="result hidden">
+          <span class="result-ico">✅</span>
+          <div class="result-info">
+            <strong id="resultTitle">¡Conversión exitosa!</strong>
+            <small id="resultSub">Tu archivo Word está listo</small>
+          </div>
+          <div class="result-btns">
+            <button class="btn btn-green" id="btnDlDocx">📝 Descargar Word (.docx)</button>
+            <button class="btn btn-blue" id="btnOpenEd">✏️ Editar en línea</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: EDITOR -->
+  <div id="panelEditor" class="hidden">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-ico">✏️</div>
+        <div>
+          <div class="card-title">Editor de documento</div>
+          <div class="card-sub" id="edName">documento</div>
+        </div>
+        <div class="card-head-right">
+          <button class="btn btn-out" id="btnBack" style="font-size:12px;padding:7px 14px">← Volver</button>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <button class="tb" onclick="e('bold')"><b>B</b></button>
+        <button class="tb" onclick="e('italic')"><i>I</i></button>
+        <button class="tb" onclick="e('underline')"><u>U</u></button>
+        <div class="tsep"></div>
+        <button class="tb" onclick="e('justifyLeft')" title="Izquierda">⬅</button>
+        <button class="tb" onclick="e('justifyCenter')" title="Centro">☰</button>
+        <button class="tb" onclick="e('justifyRight')" title="Derecha">➡</button>
+        <div class="tsep"></div>
+        <select class="fsize" onchange="setSize(this.value)" title="Tamaño de fuente">
+          <option value="8">8pt</option><option value="9">9pt</option>
+          <option value="10">10pt</option><option value="11">11pt</option>
+          <option value="12" selected>12pt</option><option value="14">14pt</option>
+          <option value="16">16pt</option><option value="18">18pt</option>
+          <option value="20">20pt</option><option value="24">24pt</option>
+          <option value="28">28pt</option><option value="32">32pt</option>
+        </select>
+        <input type="color" class="cpick" title="Color de texto" onchange="e('foreColor',this.value)">
+        <div class="tsep"></div>
+        <button class="tb" onclick="e('undo')">↩ Deshacer</button>
+        <button class="tb" onclick="e('redo')">↪ Rehacer</button>
+        <div class="tsep"></div>
+        <button class="tb" onclick="addImg()">🖼 Imagen</button>
+        <input type="file" id="imgIn" accept="image/*" class="hidden" onchange="insertImg(this)">
+        <button class="tb" onclick="addTable()">⊞ Tabla</button>
+      </div>
+
+      <!-- Editor area -->
+      <div class="editor" id="edArea" contenteditable="true" spellcheck="true"></div>
+
+      <!-- Actions -->
+      <div class="card-body" style="padding-top:12px">
+        <div class="actions">
+          <button class="btn btn-dark" id="btnSaveW">📝 Guardar como Word</button>
+          <button class="btn btn-red" id="btnSaveP">📄 Guardar como PDF</button>
+          <button class="btn btn-out" style="margin-left:auto" onclick="copyText()">📋 Copiar texto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<div id="toast"></div>
+
+<!-- Mammoth para leer DOCX en browser -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+<script>
+// ─── Estado global ─────────────────────────────────────────────────────────
+let jobId = null, selFile = null, pollTmr = null, docxBlob = null;
+
+// ─── Toast ─────────────────────────────────────────────────────────────────
+function toast(msg, type='ok'){
+  const t=document.getElementById('toast');
+  t.innerHTML=(type==='ok'?'✅':'❌')+' '+msg;
+  t.className='show '+type;
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.className='',4000);
+}
+
+// ─── Pasos ─────────────────────────────────────────────────────────────────
+function setStep(n){
+  [1,2,3,4].forEach(i=>{
+    const el=document.getElementById('s'+i);
+    el.className='st'+(i<n?' done':i===n?' active':'');
+  });
+}
+
+// ─── Drag & Drop ───────────────────────────────────────────────────────────
+const dz=document.getElementById('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');const f=e.dataTransfer.files[0];if(f)setFile(f)});
+document.getElementById('fileIn').addEventListener('change',e=>{if(e.target.files[0])setFile(e.target.files[0])});
+
+function setFile(f){
+  if(!f.name.toLowerCase().endsWith('.pdf')){toast('Solo se aceptan archivos PDF','err');return}
+  if(f.size>52428800){toast('El archivo supera el límite de 50 MB','err');return}
+  selFile=f;
+  document.getElementById('fpName').textContent=f.name;
+  document.getElementById('fpSize').textContent=(f.size/1048576).toFixed(2)+' MB';
+  document.getElementById('filePill').classList.remove('hidden');
+  document.getElementById('btnConvert').disabled=false;
+}
+function clearFile(){
+  selFile=null;
+  document.getElementById('filePill').classList.add('hidden');
+  document.getElementById('fileIn').value='';
+  document.getElementById('btnConvert').disabled=true;
+}
+
+// ─── Convertir ─────────────────────────────────────────────────────────────
+document.getElementById('btnConvert').addEventListener('click',async()=>{
+  if(!selFile)return;
+  const pass=document.getElementById('pdfPass').value;
+  document.getElementById('btnConvert').disabled=true;
+  showStatus('⚙️','Subiendo archivo...','Enviando PDF al servidor');
+  showProg(5,'Subiendo...');
+  setStep(2);
+
+  const fd=new FormData();
+  fd.append('file',selFile);
+  fd.append('password',pass);
+
+  try{
+    const res=await fetch('/convert',{method:'POST',body:fd});
+    const data=await res.json();
+    if(data.error)throw new Error(data.error);
+    jobId=data.job_id;
+    poll(jobId);
+  }catch(err){
+    showStatus('❌','Error al enviar',''+err.message);
+    toast('Error: '+err.message,'err');
+    document.getElementById('btnConvert').disabled=false;
+    setStep(1);
+  }
+});
+
+function poll(id){
+  clearInterval(pollTmr);
+  pollTmr=setInterval(async()=>{
+    try{
+      const r=await fetch('/status/'+id);
+      const d=await r.json();
+      if(d.error){clearInterval(pollTmr);showStatus('❌','Error',d.error||'');toast(d.error||'Error','err');document.getElementById('btnConvert').disabled=false;setStep(1);return}
+      showProg(d.progress||0,d.step||'Procesando...');
+      showStatus('🔄',d.step||'Procesando...','Por favor espera, puede tomar unos segundos');
+      if(d.status==='done'){
+        clearInterval(pollTmr);
+        showProg(100,'¡Completado!');
+        document.getElementById('statusBox').classList.add('hidden');
+        document.getElementById('resultTitle').textContent='¡Conversión exitosa!';
+        document.getElementById('resultSub').textContent=(d.security_msg||'')+' — Listo para descargar';
+        document.getElementById('resultBox').classList.remove('hidden');
+        setStep(3);
+        toast('PDF convertido a Word exitosamente');
+      }
+    }catch(e){/* red error transitorio */}
+  },900);
+}
+
+function showStatus(ico,title,sub){
+  document.getElementById('stIco').textContent=ico;
+  document.getElementById('stTitle').textContent=title;
+  document.getElementById('stSub').textContent=sub;
+  document.getElementById('statusBox').classList.remove('hidden');
+}
+function showProg(pct,lbl){
+  document.getElementById('progWrap').classList.remove('hidden');
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progStep').textContent=lbl;
+  document.getElementById('progPct').textContent=Math.round(pct)+'%';
+}
+
+// ─── Descargar DOCX ────────────────────────────────────────────────────────
+document.getElementById('btnDlDocx').addEventListener('click',()=>{
+  if(jobId){window.location.href='/download/'+jobId;toast('Descargando Word...')}
+});
+
+// ─── Abrir editor en línea ─────────────────────────────────────────────────
+document.getElementById('btnOpenEd').addEventListener('click',async()=>{
+  if(!jobId)return;
+  const btn=document.getElementById('btnOpenEd');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Cargando...';
+  try{
+    const res=await fetch('/download/'+jobId);
+    docxBlob=await res.blob();
+    const ab=await docxBlob.arrayBuffer();
+    const result=await mammoth.convertToHtml({arrayBuffer:ab});
+    document.getElementById('edArea').innerHTML=result.value||'<p>(Documento vacío)</p>';
+    document.getElementById('edName').textContent=(selFile?.name||'documento')+' — editando';
+    document.getElementById('panelUpload').classList.add('hidden');
+    document.getElementById('panelEditor').classList.remove('hidden');
+    setStep(4);
+    toast('Documento cargado en el editor');
+  }catch(err){
+    document.getElementById('edArea').innerHTML='<p style="color:var(--muted)">El documento se descargó. Ábrelo en Word o LibreOffice para verlo con el diseño completo.</p>';
+    document.getElementById('panelUpload').classList.add('hidden');
+    document.getElementById('panelEditor').classList.remove('hidden');
+    setStep(4);
+  }
+  btn.disabled=false;btn.innerHTML='✏️ Editar en línea';
+});
+
+// ─── Volver ────────────────────────────────────────────────────────────────
+document.getElementById('btnBack').addEventListener('click',()=>{
+  clearInterval(pollTmr);
+  document.getElementById('panelEditor').classList.add('hidden');
+  document.getElementById('panelUpload').classList.remove('hidden');
+  document.getElementById('resultBox').classList.add('hidden');
+  document.getElementById('statusBox').classList.add('hidden');
+  document.getElementById('progWrap').classList.add('hidden');
+  setStep(jobId?3:1);
+});
+
+// ─── Funciones del editor ──────────────────────────────────────────────────
+function e(cmd,val){document.getElementById('edArea').focus();document.execCommand(cmd,false,val||null)}
+function setSize(s){
+  document.getElementById('edArea').focus();
+  document.execCommand('fontSize',false,'7');
+  document.getElementById('edArea').querySelectorAll('font[size="7"]').forEach(el=>{el.removeAttribute('size');el.style.fontSize=s+'pt'});
+}
+function addImg(){document.getElementById('imgIn').click()}
+function insertImg(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{document.getElementById('edArea').focus();document.execCommand('insertHTML',false,`<img src="${ev.target.result}" style="max-width:100%;height:auto;display:block;margin:8px 0">`);toast('Imagen insertada')};
+  r.readAsDataURL(f);input.value='';
+}
+function addTable(){
+  document.getElementById('edArea').focus();
+  document.execCommand('insertHTML',false,`<br>
+<table style="width:100%;border-collapse:collapse;margin:12px 0">
+<tr><th style="border:1px solid #cdc8b8;padding:8px;background:#eae6db">Columna 1</th><th style="border:1px solid #cdc8b8;padding:8px;background:#eae6db">Columna 2</th><th style="border:1px solid #cdc8b8;padding:8px;background:#eae6db">Columna 3</th></tr>
+<tr><td style="border:1px solid #cdc8b8;padding:8px">Dato 1</td><td style="border:1px solid #cdc8b8;padding:8px">Dato 2</td><td style="border:1px solid #cdc8b8;padding:8px">Dato 3</td></tr>
+</table><br>`);
+}
+function copyText(){navigator.clipboard.writeText(document.getElementById('edArea').innerText).then(()=>toast('Texto copiado'))}
+
+// ─── Guardar como Word ─────────────────────────────────────────────────────
+document.getElementById('btnSaveW').addEventListener('click',()=>{
+  // Re-descarga el DOCX original convertido por el servidor (layout preservado)
+  if(jobId){window.location.href='/download/'+jobId;toast('Descargando Word con diseño preservado...')}
+  else toast('Sube y convierte un PDF primero','err');
+  setStep(4);
+});
+
+// ─── Guardar como PDF ──────────────────────────────────────────────────────
+document.getElementById('btnSaveP').addEventListener('click',()=>{
+  setStep(4);
+  const content=document.getElementById('edArea').innerHTML;
+  const pw=window.open('','_blank');
+  if(!pw){toast('Permite ventanas emergentes para guardar PDF','err');return}
+  pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+  body{font-family:'Times New Roman',serif;font-size:11pt;margin:2cm;line-height:1.55;color:#000}
+  img{max-width:100%;height:auto}table{border-collapse:collapse;width:100%}
+  td,th{border:1px solid #ccc;padding:6px 10px}th{background:#f0ece0;font-weight:600}
+  h1,h2,h3{font-family:Arial,sans-serif}
+  .np{display:none!important}@media print{.np{display:none!important}}
+</style></head><body>
+${content}
+<div class="np" style="margin-top:28px;padding:18px;background:#f5f1e8;border-radius:8px;text-align:center;font-family:Arial">
+  <p style="margin-bottom:10px;font-size:13px;color:#555">En el diálogo selecciona <strong>"Guardar como PDF"</strong> como destino</p>
+  <button onclick="window.print()" style="padding:10px 26px;background:#c13a18;color:#fff;border:none;border-radius:7px;font-size:14px;cursor:pointer;font-weight:bold">🖨️ Guardar como PDF</button>
+</div>
+</body></html>`);
+  pw.document.close();
+  setTimeout(()=>pw.print(),700);
+  toast('Ventana de impresión abierta — elige "Guardar como PDF"');
+});
+</script>
+</body>
+</html>
