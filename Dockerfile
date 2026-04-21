@@ -4,6 +4,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice-writer \
     libreoffice-draw \
     qpdf \
+    tesseract-ocr \
+    tesseract-ocr-spa \
+    tesseract-ocr-eng \
+    poppler-utils \
     fonts-liberation \
     fonts-dejavu-core \
     fontconfig \
@@ -39,5 +43,4 @@ CMD gunicorn \
     --keep-alive 5 \
     --worker-class gthread \
     --log-level info \
-    server:app
     server:app
